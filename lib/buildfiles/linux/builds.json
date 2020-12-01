@@ -1,0 +1,12 @@
+[
+	{
+		"platform": "i686",
+		"love": "love-11.3-i686.AppImage",
+		"runtime": "runtime-i686"
+	},
+	{
+		"platform": "x86_64",
+		"love": "love-11.3-x86_64.AppImage",
+		"runtime": "runtime-x86_64"
+	}
+]

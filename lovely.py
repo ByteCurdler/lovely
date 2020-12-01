@@ -7,6 +7,7 @@ import time
 import plistlib
 import subprocess
 import re
+import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument("location")
@@ -66,16 +67,26 @@ def build_windows(lovefile):
     # - Zip it all
     sh.cp("-r", f"{lib_dir}/buildfiles/windows/",
           f"{build_folder}/windows_build")
+
     fuse(f"{build_folder}/windows_build/win32/love.exe", lovefile,
          f"{build_folder}/windows_build/win32/{game_id}.exe")
+    fuse(f"{build_folder}/windows_build/win32/lovec.exe", lovefile,
+         f"{build_folder}/windows_build/win32/{game_id}_console.exe")
     sh.rm(f"{build_folder}/windows_build/win32/love.exe")
+    sh.rm(f"{build_folder}/windows_build/win32/lovec.exe")
     zip(f"{build_folder}/windows_build/win32",
         f"{build_folder}/{game_id}-win32.zip")
+
     fuse(f"{build_folder}/windows_build/win64/love.exe", lovefile,
          f"{build_folder}/windows_build/win64/{game_id}.exe")
+    fuse(f"{build_folder}/windows_build/win64/lovec.exe", lovefile,
+         f"{build_folder}/windows_build/win64/{game_id}_console.exe")
     sh.rm(f"{build_folder}/windows_build/win64/love.exe")
+    sh.rm(f"{build_folder}/windows_build/win64/lovec.exe")
     zip(f"{build_folder}/windows_build/win32",
         f"{build_folder}/{game_id}-win64.zip")
+
+    sh.rm("-r", f"{build_folder}/windows_build/")
 
 
 def build_macos(lovefile):
@@ -104,21 +115,21 @@ def build_macos(lovefile):
     zip(f"{build_folder}/macos_build",
         f"{build_folder}/{game_id}-macos.zip")
 
-
-def build_linux_tar_gz(lovefile):
-    print("(not) Making Linux .tar.gz")
+    sh.rm("-r", f"{build_folder}/macos_build/")
 
 
 def build_linux_appimage(lovefile):
-    print("(partially) Making Linux AppImage")
+    print("Making Linux AppImages (i686 untested)")
     sh.cp("-r", f"{lib_dir}/buildfiles/linux/",
           f"{build_folder}/linux_build")
     sh.cd(f"{build_folder}/linux_build")
-    appImages = [i for i in os.listdir(f"{build_folder}/linux_build"
-                                       ) if i.endswith(".AppImage")]
-    for i in appImages:
+
+    targets = json.load(open(f"{build_folder}/linux_build/builds.json"))
+
+    for target in targets:
+        print(f" - Building for {target['platform']}...")
         subprocess.call([
-                f"{build_folder}/linux_build/{i}",
+                f"{build_folder}/linux_build/{target['love']}",
                 "--appimage-extract"], stderr=subprocess.DEVNULL)
         sh.cp(lovefile,
               f"{build_folder}/linux_build/squashfs-root/usr/lib/game.love")
@@ -128,13 +139,22 @@ def build_linux_appimage(lovefile):
             r'("\$@")', r"${APPIMAGE_DIR}/usr/lib/game.love \1",
             f"{build_folder}/linux_build/squashfs-root/usr/bin/wrapper-love")
 
-        sh.rm(f"{build_folder}/linux_build/{i}")
         outfile = re.sub(r"love-[0-9\.]*",
-                         f"{build_folder}/{game_id}-linux", i)
+                         f"{build_folder}/{game_id}-linux", target['love'])
+        print([
+                f"{lib_dir}/tools/appimagetool-x86_64.AppImage",
+                "--runtime-file",
+                f"{lib_dir}/linux_build/{target['runtime']}",
+                f"{build_folder}/linux_build/squashfs-root", outfile])
         subprocess.call([
                 f"{lib_dir}/tools/appimagetool-x86_64.AppImage",
+                "--runtime-file",
+                f"{target['runtime']}",
                 f"{build_folder}/linux_build/squashfs-root", outfile],
                 stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+        sh.rm("-r", f"{build_folder}/linux_build/squashfs-root")
+
+        sh.rm("-r", f"{build_folder}/linux_build/")
 
 
 # https://love2d.org/wiki/Game_Distribution
@@ -153,5 +173,4 @@ else:
 
 build_windows(lovefile)
 build_macos(lovefile)
-# build_linux_tar_gz(lovefile)
 build_linux_appimage(lovefile)
