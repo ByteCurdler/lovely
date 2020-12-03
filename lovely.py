@@ -16,6 +16,9 @@ parser.add_argument("-n", "--name", required=False)
 parser.add_argument("-p", "--package", required=False)
 args = parser.parse_args()
 
+# https://love2d.org/wiki/Game_Distribution
+print("Lövely v0-alpha0")
+
 game_id = (args.id if args.id else
            input("ID of game (eg. MyGame): "))
 game_name = (args.name if args.name else
@@ -68,23 +71,17 @@ def build_windows(lovefile):
     sh.cp("-r", f"{lib_dir}/buildfiles/windows/",
           f"{build_folder}/windows_build")
 
-    fuse(f"{build_folder}/windows_build/win32/love.exe", lovefile,
-         f"{build_folder}/windows_build/win32/{game_id}.exe")
-    fuse(f"{build_folder}/windows_build/win32/lovec.exe", lovefile,
-         f"{build_folder}/windows_build/win32/{game_id}_console.exe")
-    sh.rm(f"{build_folder}/windows_build/win32/love.exe")
-    sh.rm(f"{build_folder}/windows_build/win32/lovec.exe")
-    zip(f"{build_folder}/windows_build/win32",
-        f"{build_folder}/{game_id}-win32.zip")
-
-    fuse(f"{build_folder}/windows_build/win64/love.exe", lovefile,
-         f"{build_folder}/windows_build/win64/{game_id}.exe")
-    fuse(f"{build_folder}/windows_build/win64/lovec.exe", lovefile,
-         f"{build_folder}/windows_build/win64/{game_id}_console.exe")
-    sh.rm(f"{build_folder}/windows_build/win64/love.exe")
-    sh.rm(f"{build_folder}/windows_build/win64/lovec.exe")
-    zip(f"{build_folder}/windows_build/win32",
-        f"{build_folder}/{game_id}-win64.zip")
+    for platform in ["32", "64"]:
+        fuse(f"{build_folder}/windows_build/win{platform}/love.exe", lovefile,
+             f"{build_folder}/windows_build/win{platform}/{game_id}.exe")
+        fuse(f"{build_folder}/windows_build/win{platform}/lovec.exe", lovefile,
+             f"{build_folder}/windows_build/win{platform}/{game_id}_console.exe")
+        sh.rm(f"{build_folder}/windows_build/win{platform}/love.exe")
+        sh.rm(f"{build_folder}/windows_build/win{platform}/lovec.exe")
+        sh.rm(f"{build_folder}/windows_build/win{platform}/readme.txt")
+        sh.rm(f"{build_folder}/windows_build/win{platform}/changes.txt")
+        zip(f"{build_folder}/windows_build/win{platform}",
+            f"{build_folder}/{game_id}-win{platform}.zip")
 
     sh.rm("-r", f"{build_folder}/windows_build/")
 
@@ -141,11 +138,6 @@ def build_linux_appimage(lovefile):
 
         outfile = re.sub(r"love-[0-9\.]*",
                          f"{build_folder}/{game_id}-linux", target['love'])
-        print([
-                f"{lib_dir}/tools/appimagetool-x86_64.AppImage",
-                "--runtime-file",
-                f"{lib_dir}/linux_build/{target['runtime']}",
-                f"{build_folder}/linux_build/squashfs-root", outfile])
         subprocess.call([
                 f"{lib_dir}/tools/appimagetool-x86_64.AppImage",
                 "--runtime-file",
@@ -153,12 +145,8 @@ def build_linux_appimage(lovefile):
                 f"{build_folder}/linux_build/squashfs-root", outfile],
                 stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
         sh.rm("-r", f"{build_folder}/linux_build/squashfs-root")
+    sh.rm("-r", f"{build_folder}/linux_build/")
 
-        sh.rm("-r", f"{build_folder}/linux_build/")
-
-
-# https://love2d.org/wiki/Game_Distribution
-print("Lövely v0-alpha0")
 
 
 if os.path.isdir(args.location):

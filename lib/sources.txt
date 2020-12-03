@@ -1,0 +1,12 @@
+lib/
+|- buildfiles/
+|  |- linux/
+|  |  |- builds.json: Me
+|  |  |- love-11.3-*.AppImage: 				[love2d.org] Linux -> AppImage downloads
+|  |  |- runtime-*: 									[https://github.com/AppImage/AppImageKit/releases] runtime-* downloads
+|  |- macos/
+|  |  |- love.app/:              			[love2d.org] macOS -> 64-bit zipped download, extracted
+|  |- windows/
+|  |  |- win32, win64: 								[love2d.org] Windows -> (32/64)-bit zipped downloads, extracted
+|- tools/
+|  |- appimagetool-x86_64.AppImage:		[https://github.com/AppImage/AppImageKit/releases] download of same name
