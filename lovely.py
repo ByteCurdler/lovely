@@ -14,6 +14,7 @@ parser.add_argument("location")
 parser.add_argument("-i", "--id", required=False)
 parser.add_argument("-n", "--name", required=False)
 parser.add_argument("-p", "--package", required=False)
+parser.add_argument("-O", "--output", required=False)
 args = parser.parse_args()
 
 # https://love2d.org/wiki/Game_Distribution
@@ -30,6 +31,8 @@ lib_dir = os.path.dirname(os.path.realpath(__file__)) + "/lib"
 
 build_token = f"{game_id}_build_{time.strftime('%Y-%m-%d_%H-%M-%S')}"
 build_folder = os.getcwd() + "/" + build_token
+build_folder = (args.output if args.package else
+                (os.getcwd() + "/" + build_token))
 sh.mkdir(build_folder)
 
 
