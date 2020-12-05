@@ -30,7 +30,7 @@ game_package = (args.package if args.package else
 lib_dir = os.path.dirname(os.path.realpath(__file__)) + "/lib"
 
 build_token = f"{game_id}_build_{time.strftime('%Y-%m-%d_%H-%M-%S')}"
-build_folder = (args.output if args.package else
+build_folder = (args.output if args.output else
                 (os.getcwd() + "/" + build_token))
 sh.mkdir(build_folder)
 
