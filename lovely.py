@@ -139,7 +139,7 @@ def build_linux_appimage(lovefile):
             f"{build_folder}/linux_build/squashfs-root/usr/bin/wrapper-love")
 
         outfile = re.sub(r"love-[0-9\.]*",
-                         f"{build_folder}/{game_id}-linux", target['love'])
+                         f"{build_folder}/{game_id}", target['love'])
         subprocess.call([
                 f"{lib_dir}/tools/appimagetool-x86_64.AppImage",
                 "--runtime-file",
